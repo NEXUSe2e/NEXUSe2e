@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.nexuse2e</groupId>
+		<artifactId>nexuse2e-parent</artifactId>
+		<version>1.0-SNAPSHOT</version>
+	</parent>
+	<!-- this project -->
+	<artifactId>nexuse2e-dbtest</artifactId>
+	<packaging>jar</packaging>
+	<version>5.9.1</version>
+	<name>dbtest</name>
+	<url>http://www.nexuse2e.org</url>
+	<!-- license -->
+	<licenses>
+		<license>
+			<name>GNU LESSER GENERAL PUBLIC LICENSE (LGPL), Version 2.1</name>
+			<url>http://www.fsf.org/licensing/licenses/lgpl.txt</url>
+			<distribution>repo</distribution>
+			<comments>OSS license that permits inclusion in commercial products.
+			</comments>
+		</license>
+	</licenses>
+
+	<properties>
+		<project.reporting.outputEncoding>UTF-8
+		</project.reporting.outputEncoding>
+	</properties>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>3.0.0-M4</version>
+					<configuration>
+						<additionalClasspathElements>
+							<additionalClasspathElement>${basedir}/target/classes
+							</additionalClasspathElement>
+						</additionalClasspathElements>
+						<includes>
+							<include>**/*IntegrationTest.java</include>
+						</includes>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>integration-test</goal>
+								<goal>verify</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>3.0.0-M4</version>
+					<configuration>
+						<excludes>
+							<exclude>**/*IntegrationTest.java</exclude>
+						</excludes>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<artifactId>maven-failsafe-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.6.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers</artifactId>
+			<version>1.14.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>1.14.3</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>mssqlserver</artifactId>
+			<version>1.14.3</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>
