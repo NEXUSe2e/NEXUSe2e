@@ -1,4 +1,4 @@
-# Download necessary libraries
+# Download necessary libraries - test
 #
 # Most libraries NEXUSe2e depends on are managed by Maven and will be
 # automatically downloaded later (see README.TXT for a explanation of the complete build process).
