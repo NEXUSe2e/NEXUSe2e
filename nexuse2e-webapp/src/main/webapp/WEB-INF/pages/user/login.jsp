@@ -31,7 +31,7 @@
 	</tr>
 </table>
 
-<form name="loginForm" method="post" action="LoginCheck.do">
+<form name="loginForm" method="post" action="LoginCheck.do" autocomplete="off">
 <table class="NEXUS_TABLE" style="width:300px;">
 	<tr>
 		<td class="NEXUSName">Login name</td>
