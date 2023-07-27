@@ -19,6 +19,8 @@
  */
 package org.nexuse2e.messaging;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.nexuse2e.BeanStatus;
 import org.nexuse2e.Layer;
 import org.nexuse2e.Manageable;
@@ -36,6 +38,7 @@ import org.nexuse2e.controller.StateTransitionException;
  */
 public class FrontendInboundResponseEndpoint implements MessageProcessor, Manageable {
 
+    private static final Logger LOG = LogManager.getLogger(FrontendInboundResponseEndpoint.class);
     private BeanStatus status = BeanStatus.INSTANTIATED;
 
     
@@ -43,12 +46,12 @@ public class FrontendInboundResponseEndpoint implements MessageProcessor, Manage
             throws IllegalArgumentException, IllegalStateException,
             NexusException {
 
-        if (messageContext != null && messageContext.isResponseMessage()) {
+        if (messageContext != null && (messageContext.isResponseMessage() || messageContext.getMessagePojo().isAck())) {
             try {
                 messageContext.getStateMachine().queueMessage(); // persist message and perform choreo step transition
                 messageContext.getStateMachine().sentMessage();  // mark response as 'sent'
-            } catch (StateTransitionException e) {
-                throw new NexusException( e );
+            } catch (Exception e) {
+                LOG.warn(e.getMessage());
             }
         }
         
