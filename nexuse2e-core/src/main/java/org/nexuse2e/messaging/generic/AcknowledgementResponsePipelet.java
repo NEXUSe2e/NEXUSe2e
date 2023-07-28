@@ -53,7 +53,7 @@ public class AcknowledgementResponsePipelet extends AbstractPipelet {
 
         MessageContext responseMessageContext = null;
         if (messageContext.getMessagePojo().getStatus() != MessageStatus.FAILED.getOrdinal()) {
-            LOG.info(new LogMessage("No error response message found, creating ack", message));
+            LOG.info(new LogMessage("Creating acknowledgement", message));
             // generate ack for reliable connections
             try {
                 responseMessageContext = protocolAdapter.createAcknowledgement(messageContext.getChoreography(),
@@ -62,7 +62,7 @@ public class AcknowledgementResponsePipelet extends AbstractPipelet {
                   LOG.error(new LogMessage("Error creating acknowledgement", messageContext, e), e);
             }
         } else {
-            LOG.error(new LogMessage("error response message found", message));
+            LOG.error(new LogMessage("Not creating acknowledgement for message in failed status", message));
         }
         return responseMessageContext;
     }

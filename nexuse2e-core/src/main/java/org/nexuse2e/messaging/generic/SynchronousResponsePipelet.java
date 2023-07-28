@@ -26,6 +26,9 @@ import org.nexuse2e.messaging.AbstractPipelet;
 import org.nexuse2e.messaging.MessageContext;
 import org.nexuse2e.service.http.HttpResponse;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SynchronousResponsePipelet extends AbstractPipelet {
 
     private static final Logger LOG = LogManager.getLogger(SynchronousResponsePipelet.class);
@@ -44,7 +47,13 @@ public class SynchronousResponsePipelet extends AbstractPipelet {
             IllegalStateException, NexusException {
 
         if (messageContext != null) {
-            HttpResponse response = new HttpResponse((byte[]) messageContext.getData(), 200);
+            Map<String, String> headers = new HashMap<>();
+            headers.put("SOAPAction", "\"ebXML\"");
+            headers.put("Content-Type", String.format("multipart/related; type=\"text/xml\"; boundary=MIME_boundary; start=%s%s-Header",
+                    messageContext.getMessagePojo().getMessageId(), messageContext.getMessagePojo().getTRP().getProtocol()));
+
+            HttpResponse response = new HttpResponse((byte[]) messageContext.getData(), 200, headers);
+
             messageContext.setSynchronusBackendResponse(response);
         }
 
