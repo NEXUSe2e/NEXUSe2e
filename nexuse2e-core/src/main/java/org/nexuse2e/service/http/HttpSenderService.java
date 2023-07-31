@@ -21,6 +21,7 @@ package org.nexuse2e.service.http;
 
 import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -42,6 +43,7 @@ import org.nexuse2e.configuration.ParameterType;
 import org.nexuse2e.logging.LogMessage;
 import org.nexuse2e.messaging.FrontendPipeline;
 import org.nexuse2e.messaging.MessageContext;
+import org.nexuse2e.messaging.ebxml.v20.Constants;
 import org.nexuse2e.pojo.CertificatePojo;
 import org.nexuse2e.pojo.ChoreographyPojo;
 import org.nexuse2e.pojo.MessagePayloadPojo;
@@ -55,13 +57,13 @@ import org.nexuse2e.util.CertSSLProtocolSocketFactory;
 import org.nexuse2e.util.CertificateUtil;
 import org.nexuse2e.util.EncryptionUtil;
 
+import javax.mail.internet.ContentType;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
-
-import javax.mail.internet.ContentType;
 
 /**
  * A service that can be used by a <code>TransportSender</code> in order
@@ -281,7 +283,14 @@ public class HttpSenderService extends AbstractService implements SenderAware {
 
                 if (LOG.isTraceEnabled()) {
                     httpReply = getHTTPReply(body, statusCode);
-                    LOG.trace(new LogMessage("Retrieved HTTP response:" + httpReply, messageContext.getMessagePojo()));
+                    LOG.trace(new LogMessage("Retrieved HTTP response\n:" + httpReply, messageContext.getMessagePojo()));
+                }
+
+                Header[] responseHeaders = method.getResponseHeaders();
+                Map<String, String> customParameters = new HashMap<>();
+                for (Header header : responseHeaders) {
+                    customParameters.put(Constants.PARAMETER_PREFIX_HTTP + header.getName().toLowerCase(), header.getValue());
+                    LOG.trace(new LogMessage("Response header - key: " + header.getName() + ", value: " + header.getValue(), messageContext.getMessagePojo()));
                 }
 
                 if (processReturn) {
@@ -291,6 +300,7 @@ public class HttpSenderService extends AbstractService implements SenderAware {
                     message.setEndDate(null);
                     message.setRetries(0);
                     message.setMessageId(null);
+                    message.getCustomParameters().putAll(customParameters);
                     // important: Payload needs to be reset, shall be set from data field by pipeline processing
                     message.setMessagePayloads(new ArrayList<MessagePayloadPojo>());
                     returnMessageContext = Engine.getInstance().getTransactionService().createMessageContext(message);

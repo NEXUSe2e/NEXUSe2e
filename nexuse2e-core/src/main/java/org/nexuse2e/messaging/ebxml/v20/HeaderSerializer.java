@@ -354,6 +354,18 @@ public class HeaderSerializer extends AbstractPipelet {
 
                 msgHeader.addChildElement(msgDataEl);
 
+                // SyncReply
+                // --------------------------------------------------------
+                if (messageContext.getParticipant().getConnection().isSynchronous()) {
+                    name = soapFactory.createName("SyncReply", Constants.EBXML_NAMESPACE_PREFIX,
+                            Constants.EBXML_NAMESPACE);
+                    SOAPHeaderElement syncReplyHeader = soapHeader.addHeaderElement(name);
+                    syncReplyHeader.setMustUnderstand(true);
+                    syncReplyHeader.setActor("http://schemas.xmlsoap.org/soap/actor/next");
+                    syncReplyHeader.addAttribute(soapFactory.createName(Constants.VERSION, Constants.EBXML_NAMESPACE_PREFIX,
+                            Constants.EBXML_NAMESPACE), Constants.EBXMLVERSION);
+                }
+
                 if (ack) { // ack
                     // ACKNOWLEDGEMENT--------------------------------------------------
                     createAck(soapFactory, soapHeader, createdDate, messagePojo.getReferencedMessage().getMessageId()
