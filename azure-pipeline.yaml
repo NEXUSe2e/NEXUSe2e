@@ -147,3 +147,30 @@ stages:
                     assets: '$(Build.ArtifactStagingDirectory)/webapp/*'
                     isDraft: true
                     tagSource : 'gitTag'
+  - stage: feed
+    displayName: Devops Feed Deployment
+    dependsOn: build
+    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags/'))
+    variables:
+      - name: versionTagMatches
+        value: $[ stageDependencies.build.Build.outputs['checkVersion.versionTagMatches'] ]
+    jobs:
+      - deployment: 'Deployment'
+        pool:
+          vmImage: ubuntu-latest
+        environment: 'NEXUSe2e-Devops-Feed'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: Maven@3
+                  displayName: 'Maven Deploy WebApp'
+                  inputs:
+                    mavenPomFile: ./nexuse2e-webapp/pom.xml
+                    goals: deploy
+                    publishJUnitResults: false
+                    javaHomeOption: JDKVersion
+                    jdkVersionOption: 1.11
+                    jdkArchitectureOption: 'x64'
+                    mavenOptions: '-Xmx3072m'
+                    mavenAuthenticateFeed: true
