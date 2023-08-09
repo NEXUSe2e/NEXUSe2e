@@ -20,7 +20,8 @@ stages:
           - powershell: |
               # Get version from webapp pom and add 'v' prefix
               [xml]$webappPomXml = Get-Content ./nexuse2e-webapp/pom.xml
-              $webappVersion = "v$($webappPomXml.project.version)"
+              $webappVersion = "v$($webappPomXml.project.version)"              
+              Write-Host "##vso[task.setvariable variable=webappPomVersion;isOutput=true]$($webappVersion)"
               
               # Get version from core pom and add 'v' prefix
               [xml]$corePomXml = Get-Content ./nexuse2e-core/pom.xml
@@ -163,6 +164,22 @@ stages:
           runOnce:
             deploy:
               steps:
+                - powershell: |
+                    echo "Webapp version: $(webappPomVersion)"
+                    echo "Version matches tag: $(versionTagMatches)"
+                    if ("$(versionTagMatches)".Equals("False")) {
+                      Write-Error "Pom versions do not match tag!"
+                    }
+                  displayName: Check Version
+                  name: checkVersion
+                - task: UniversalPackages@0
+                  displayName: 'Publish JAR to Azure DevOps Feed'
+                  inputs:
+                    command: publish
+                    publishDirectory: $(Build.ArtifactStagingDirectory)/webapp  # Path to your JAR file
+                    vstsFeedPublish: 'nexuse2e.org'  # Replace with your Azure DevOps Feed name
+                    vstsFeedPackagePublish: 'nexuse2e-webapp'  # Replace with your package name
+                    vstsPackageVersion: $(Build.BuildNumber)  # Use a relevant version identifier
                 - task: Maven@3
                   displayName: 'Maven Deploy WebApp'
                   inputs:
