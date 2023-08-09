@@ -179,6 +179,6 @@ stages:
                   inputs:
                     command: publish
                     publishDirectory: $(Build.ArtifactStagingDirectory)/webapp  # Path to your JAR file
-                    vstsFeedPublish: 'nexuse2e.org'  # Replace with your Azure DevOps Feed name
+                    vstsFeedPublish: 'org.nexuse2e'  # Replace with your Azure DevOps Feed name
                     vstsFeedPackagePublish: 'nexuse2e-webapp'  # Replace with your package name
                     vstsPackageVersion: $(webappPomVersion)  # Use a relevant version identifier
