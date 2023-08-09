@@ -153,6 +153,8 @@ stages:
     dependsOn: build
     condition: succeeded()
     variables:
+      - name: webappPomVersion
+        value: $[ stageDependencies.build.Build.outputs['checkVersion.webappPomVersion'] ]
       - name: versionTagMatches
         value: $[ stageDependencies.build.Build.outputs['checkVersion.versionTagMatches'] ]
     jobs:
