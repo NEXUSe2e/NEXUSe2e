@@ -111,12 +111,6 @@ stages:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)/webapp'
               ArtifactName: 'webapp'
               publishLocation: 'Container'
-          - script: |
-              echo "Current directory: $(PWD)"
-              echo "Contents of the current directory:"
-              ls -R
-            displayName: 'Print Directory Structure'
-
   - stage: github
     displayName: Github Release
     dependsOn: build
@@ -169,16 +163,10 @@ stages:
           runOnce:
             deploy:
               steps:
-                - script: |
-                    echo "BuildDirectory: $(Agent.BuildDirectory)"
-                    echo "Current directory: $(PWD)"
-                    echo "Contents of the current directory:"
-                    ls -R
-                  displayName: 'Print Directory Structure'
                 - task: Maven@3
                   displayName: 'Maven Deploy WebApp'
                   inputs:
-                    mavenPomFile: ./nexuse2e-webapp/pom.xml
+                    mavenPomFile: '$(Agent.BuildDirectory)/s/nexuse2e-webapp/pom.xml'
                     goals: deploy
                     publishJUnitResults: false
                     javaHomeOption: JDKVersion
