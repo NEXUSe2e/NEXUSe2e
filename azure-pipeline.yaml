@@ -163,6 +163,13 @@ stages:
           runOnce:
             deploy:
               steps:
+                - powershell: |
+                    echo "Version matches tag: $(versionTagMatches)"
+                    if ("$(versionTagMatches)".Equals("False")) {
+                      Write-Error "Pom versions do not match tag!"
+                    }
+                  displayName: Check Version
+                  name: checkVersion
                 - task: Maven@3
                   displayName: 'Maven Deploy WebApp'
                   inputs:
