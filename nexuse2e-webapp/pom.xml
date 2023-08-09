@@ -24,6 +24,14 @@
         </license>
     </licenses>
 
+    <distributionManagement>
+        <repository>
+            <id>org.nexuse2e</id>
+            <name>NEXUSe2e Releases</name>
+            <url>https://pkgs.dev.azure.com/evolvingsystemsconsulting/_packaging/org.nexuse2e/maven/v1</url>
+        </repository>
+    </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.nexuse2e</groupId>

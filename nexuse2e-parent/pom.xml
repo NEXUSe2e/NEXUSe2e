@@ -25,47 +25,9 @@
         <repository>
             <id>org.nexuse2e</id>
             <name>NEXUSe2e Releases</name>
-            <url>https://solutionsdirekt.pkgs.visualstudio.com/_packaging/org.nexuse2e/maven/v1</url>
+            <url>https://pkgs.dev.azure.com/evolvingsystemsconsulting/_packaging/org.nexuse2e/maven/v1</url>
         </repository>
-        <snapshotRepository>
-            <id>org.nexuse2e-snapshots</id>
-            <name>NEXUSe2e Snapshots</name>
-            <url>https://solutionsdirekt.pkgs.visualstudio.com/NEXUSe2e/_packaging/org.nexuse2e-snapshots/maven/v1</url>
-        </snapshotRepository>
     </distributionManagement>
-
-    <repositories>
-        <repository>
-            <id>org.nexuse2e</id>
-            <url>https://solutionsdirekt.pkgs.visualstudio.com/_packaging/org.nexuse2e/maven/v1</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-         <repository>
-            <id>org.nexuse2e-snapshots</id>
-            <url>https://solutionsdirekt.pkgs.visualstudio.com/NEXUSe2e/_packaging/org.nexuse2e-snapshots/maven/v1</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>codehaus</id>
-            <name>Maven Repository of Codehaus</name>
-            <layout>default</layout>
-            <url>https://repository.jboss.org/nexus/content/repositories/thirdparty-releases/</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-
-    </repositories>
 
     <build>
         <plugins>
