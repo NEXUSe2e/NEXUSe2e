@@ -156,7 +156,7 @@ stages:
   - stage: feed
     displayName: Devops Feed Deployment
     dependsOn: build
-    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags/'))
+    condition: succeeded()
     variables:
       - name: versionTagMatches
         value: $[ stageDependencies.build.Build.outputs['checkVersion.versionTagMatches'] ]
