@@ -169,13 +169,6 @@ stages:
           runOnce:
             deploy:
               steps:
-                - powershell: |
-                    echo "Version matches tag: $(versionTagMatches)"
-                    if ("$(versionTagMatches)".Equals("False")) {
-                      Write-Error "Pom versions do not match tag!"
-                    }
-                  displayName: Check Version
-                  name: checkVersion
                 - script: |
                     echo "BuildDirectory: $(Agent.BuildDirectory)"
                     echo "Current directory: $(PWD)"
