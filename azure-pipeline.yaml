@@ -177,6 +177,7 @@ stages:
                   displayName: Check Version
                   name: checkVersion
                 - script: |
+                    echo "BuildDirectory: $(Agent.BuildDirectory)"
                     echo "Current directory: $(PWD)"
                     echo "Contents of the current directory:"
                     ls -R
