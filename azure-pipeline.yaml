@@ -173,7 +173,7 @@ stages:
                 - task: Maven@3
                   displayName: 'Maven Deploy WebApp'
                   inputs:
-                    mavenPomFile: ./nexuse2e-webapp/pom.xml
+                    mavenPomFile: 'nexuse2e-webapp/pom.xml'
                     goals: deploy
                     publishJUnitResults: false
                     javaHomeOption: JDKVersion
@@ -181,3 +181,4 @@ stages:
                     jdkArchitectureOption: 'x64'
                     mavenOptions: '-Xmx3072m'
                     mavenAuthenticateFeed: true
+
