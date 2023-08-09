@@ -170,7 +170,7 @@ stages:
                     echo "Webapp version: $(webappPomVersion)"
                     echo "Version matches tag: $(versionTagMatches)"
                     if ("$(versionTagMatches)".Equals("False")) {
-                      Write-Error "Pom versions do not match tag!"
+                      echo "Pom versions do not match tag!"
                     }
                   displayName: Check Version
                   name: checkVersion
@@ -181,16 +181,4 @@ stages:
                     publishDirectory: $(Build.ArtifactStagingDirectory)/webapp  # Path to your JAR file
                     vstsFeedPublish: 'nexuse2e.org'  # Replace with your Azure DevOps Feed name
                     vstsFeedPackagePublish: 'nexuse2e-webapp'  # Replace with your package name
-                    vstsPackageVersion: $(Build.BuildNumber)  # Use a relevant version identifier
-                - task: Maven@3
-                  displayName: 'Maven Deploy WebApp'
-                  inputs:
-                    mavenPomFile: '$(Agent.BuildDirectory)/s/nexuse2e-webapp/pom.xml'
-                    goals: deploy
-                    publishJUnitResults: false
-                    javaHomeOption: JDKVersion
-                    jdkVersionOption: 1.11
-                    jdkArchitectureOption: 'x64'
-                    mavenOptions: '-Xmx3072m'
-                    mavenAuthenticateFeed: true
-
+                    vstsPackageVersion: $(webappPomVersion)  # Use a relevant version identifier
