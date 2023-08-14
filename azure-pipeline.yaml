@@ -187,8 +187,6 @@ stages:
             deploy:
               steps:
                 - powershell: |
-                    echo "ArtifactStagingDirectory: $(Build.ArtifactStagingDirectory)"
-                    echo "SourcesDirectory: $(Build.SourcesDirectory)"
                     echo "Webapp version: $(webappPomVersion)"
                     echo "Version matches tag: $(versionTagMatches)"
                     if ("$(versionTagMatches)".Equals("False")) {
@@ -196,6 +194,12 @@ stages:
                     }
                   displayName: Check Version
                   name: checkVersion
+                - task: DownloadBuildArtifacts@0
+                  displayName: 'Download Parent pom'
+                  inputs:
+                    artifactName: webapp
+                    itemPattern: 'parent/pom.xml'
+                    downloadPath: '$(Build.ArtifactStagingDirectory)'
                 - task: Maven@3
                   name: Install_Parent
                   inputs:
