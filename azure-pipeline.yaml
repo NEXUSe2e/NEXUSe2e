@@ -60,6 +60,13 @@ stages:
               jdkArchitectureOption: 'x64'
               mavenOptions: '-Xmx3072m'
               mavenAuthenticateFeed: true
+          - task: CopyFiles@2
+            displayName: 'Copying Parent pom'
+            inputs:
+              SourceFolder: '$(build.sourcesdirectory)'
+              Contents: 'nexuse2e-parent/pom.xml'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)/parent'
+              flattenFolders: true
           - task: Maven@3
             displayName: 'Maven Build Core'
             inputs:
@@ -74,7 +81,7 @@ stages:
               mavenOptions: '-Xmx3072m'
               mavenAuthenticateFeed: true
           - task: CopyFiles@2
-            displayName: 'Copying Core files'
+            displayName: 'Copying Core jar file'
             inputs:
               SourceFolder: '$(build.sourcesdirectory)'
               Contents: 'nexuse2e-core/target/*.jar'
@@ -100,14 +107,14 @@ stages:
               mavenOptions: '-Xmx3072m'
               mavenAuthenticateFeed: true
           - task: CopyFiles@2
-            displayName: 'Copying Webapp files'
+            displayName: 'Copying Webapp war file'
             inputs:
               SourceFolder: '$(build.sourcesdirectory)'
               Contents: 'nexuse2e-webapp/target/*.war'
               TargetFolder: '$(Build.ArtifactStagingDirectory)/webapp'
               flattenFolders: true
           - task: CopyFiles@2
-            displayName: 'Copying Webapp files'
+            displayName: 'Copying Webapp pom'
             inputs:
               SourceFolder: '$(build.sourcesdirectory)'
               Contents: 'nexuse2e-webapp/pom.xml'
@@ -175,8 +182,21 @@ stages:
                     }
                   displayName: Check Version
                   name: checkVersion
+                - task: Maven@3
+                  name: Install_Parent
+                  inputs:
+                    mavenPomFile: ./nexuse2e-parent/pom.xml
+                    goals: clean install
+                    options: >
+                      -B -e --no-transfer-progress
+                    publishJUnitResults: false
+                    javaHomeOption: JDKVersion
+                    jdkVersionOption: 1.11
+                    jdkArchitectureOption: 'x64'
+                    mavenOptions: '-Xmx3072m'
+                    mavenAuthenticateFeed: true
                 - task: DownloadBuildArtifacts@0
-                  displayName: 'Download Webapp Artifacts'
+                  displayName: 'Download Webapp pom'
                   inputs:
                     artifactName: webapp
                     itemPattern: 'webapp/pom.xml'
