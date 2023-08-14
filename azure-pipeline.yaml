@@ -67,6 +67,12 @@ stages:
               Contents: 'nexuse2e-parent/pom.xml'
               TargetFolder: '$(Build.ArtifactStagingDirectory)/parent'
               flattenFolders: true
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Parent Artifacts'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/parent'
+              ArtifactName: 'webapp'
+              publishLocation: 'Container'
           - task: Maven@3
             displayName: 'Maven Build Core'
             inputs:
