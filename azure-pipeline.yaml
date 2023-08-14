@@ -188,7 +188,7 @@ stages:
               steps:
                 - powershell: |
                     echo "ArtifactStagingDirectory: $(Build.ArtifactStagingDirectory)"
-                    echp "SourcesDirectory: $(Build.SourcesDirectory)"
+                    echo "SourcesDirectory: $(Build.SourcesDirectory)"
                     echo "Webapp version: $(webappPomVersion)"
                     echo "Version matches tag: $(versionTagMatches)"
                     if ("$(versionTagMatches)".Equals("False")) {
