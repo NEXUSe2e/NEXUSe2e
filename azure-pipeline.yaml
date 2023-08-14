@@ -106,6 +106,13 @@ stages:
               Contents: 'nexuse2e-webapp/target/*.war'
               TargetFolder: '$(Build.ArtifactStagingDirectory)/webapp'
               flattenFolders: true
+          - task: CopyFiles@2
+            displayName: 'Copying Webapp files'
+            inputs:
+              SourceFolder: '$(build.sourcesdirectory)'
+              Contents: 'nexuse2e-webapp/pom.xml'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)/webapp'
+              flattenFolders: true
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Webapp Artifacts'
             inputs:
@@ -139,7 +146,7 @@ stages:
                   displayName: 'GitHub Release (Draft)'
                   inputs:
                     gitHubConnection: 'NEXUSe2e_Github'
-                    assets: '$(Build.ArtifactStagingDirectory)/webapp/*'
+                    assets: '$(Build.ArtifactStagingDirectory)/webapp/*.war'
                     isDraft: true
                     tagSource : 'gitTag'
   - stage: feed
@@ -172,13 +179,16 @@ stages:
                   displayName: 'Download Webapp Artifacts'
                   inputs:
                     artifactName: webapp
-                    itemPattern: 'webapp/**'
+                    itemPattern: 'webapp/pom.xml'
                     downloadPath: '$(Build.ArtifactStagingDirectory)'
-                - task: UniversalPackages@0
-                  displayName: 'Publish JAR to Azure DevOps Feed'
+                - task: Maven@3
+                  displayName: 'Maven Deploy WebApp'
                   inputs:
-                    command: publish
-                    publishDirectory: $(Build.ArtifactStagingDirectory)/webapp  # Path to your JAR file
-                    vstsFeedPublish: 'org.nexuse2e'  # Replace with your Azure DevOps Feed name
-                    vstsFeedPackagePublish: 'nexuse2e-webapp'  # Replace with your package name
-                    vstsPackageVersion: $(webappPomVersion)  # Use a relevant version identifier
+                    mavenPomFile: '$(Build.ArtifactStagingDirectory)/webapp/pom.xml'
+                    goals: deploy
+                    publishJUnitResults: false
+                    javaHomeOption: JDKVersion
+                    jdkVersionOption: 1.11
+                    jdkArchitectureOption: 'x64'
+                    mavenOptions: '-Xmx3072m'
+                    mavenAuthenticateFeed: true
