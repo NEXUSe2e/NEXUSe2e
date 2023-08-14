@@ -197,7 +197,7 @@ stages:
                 - task: DownloadBuildArtifacts@0
                   displayName: 'Download Parent pom'
                   inputs:
-                    artifactName: webapp
+                    artifactName: parent
                     itemPattern: 'parent/pom.xml'
                     downloadPath: '$(Build.ArtifactStagingDirectory)'
                 - task: Maven@3
