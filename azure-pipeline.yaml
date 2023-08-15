@@ -185,7 +185,7 @@ stages:
       - name: versionTagMatches
         value: $[ stageDependencies.build.Build.outputs['checkVersion.versionTagMatches'] ]
     jobs:
-      - deployment: 'Deployment'
+      - job: 'Deployment'
         pool:
           vmImage: ubuntu-latest
         environment: 'NEXUSe2e-Devops-Feed'
@@ -201,16 +201,11 @@ stages:
                     }
                   displayName: Check Version
                   name: checkVersion
-                - task: DownloadBuildArtifacts@0
-                  displayName: 'Download Parent pom'
-                  inputs:
-                    artifactName: parent
-                    itemPattern: 'parent/pom.xml'
-                    downloadPath: '$(Build.ArtifactStagingDirectory)'
+                - checkout: self
                 - task: Maven@3
                   name: Install_Parent
                   inputs:
-                    mavenPomFile: '$(Build.ArtifactStagingDirectory)/parent/pom.xml'
+                    mavenPomFile: ./nexuse2e-parent/pom.xml
                     goals: clean install
                     options: >
                       -B -e --no-transfer-progress
@@ -220,12 +215,6 @@ stages:
                     jdkArchitectureOption: 'x64'
                     mavenOptions: '-Xmx3072m'
                     mavenAuthenticateFeed: true
-                - task: DownloadBuildArtifacts@0
-                  displayName: 'Download Core pom'
-                  inputs:
-                    artifactName: core
-                    itemPattern: 'core/pom.xml'
-                    downloadPath: '$(Build.ArtifactStagingDirectory)'
                 - task: Maven@3
                   displayName: 'Maven Deploy Core'
                   inputs:
@@ -237,12 +226,6 @@ stages:
                     jdkArchitectureOption: 'x64'
                     mavenOptions: '-Xmx3072m'
                     mavenAuthenticateFeed: true
-                - task: DownloadBuildArtifacts@0
-                  displayName: 'Download Webapp pom'
-                  inputs:
-                    artifactName: webapp
-                    itemPattern: 'webapp/pom.xml'
-                    downloadPath: '$(Build.ArtifactStagingDirectory)'
                 - task: Maven@3
                   displayName: 'Maven Deploy WebApp'
                   inputs:
