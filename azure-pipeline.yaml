@@ -197,3 +197,4 @@ stages:
                     jdkArchitectureOption: 'x64'
                     mavenOptions: '-Xmx3072m'
                     mavenAuthenticateFeed: true
+                    effectivePomSkip: true
