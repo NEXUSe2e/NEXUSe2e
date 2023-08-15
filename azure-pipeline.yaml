@@ -93,6 +93,13 @@ stages:
               Contents: 'nexuse2e-core/target/*.jar'
               TargetFolder: '$(Build.ArtifactStagingDirectory)/core'
               flattenFolders: true
+          - task: CopyFiles@2
+            displayName: 'Copying Core pom'
+            inputs:
+              SourceFolder: '$(build.sourcesdirectory)'
+              Contents: 'nexuse2e-core/pom.xml'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)/core'
+              flattenFolders: true
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Core Artifacts'
             inputs:
@@ -207,6 +214,23 @@ stages:
                     goals: clean install
                     options: >
                       -B -e --no-transfer-progress
+                    publishJUnitResults: false
+                    javaHomeOption: JDKVersion
+                    jdkVersionOption: 1.11
+                    jdkArchitectureOption: 'x64'
+                    mavenOptions: '-Xmx3072m'
+                    mavenAuthenticateFeed: true
+                - task: DownloadBuildArtifacts@0
+                  displayName: 'Download Core pom'
+                  inputs:
+                    artifactName: core
+                    itemPattern: 'core/pom.xml'
+                    downloadPath: '$(Build.ArtifactStagingDirectory)'
+                - task: Maven@3
+                  displayName: 'Maven Deploy Core'
+                  inputs:
+                    mavenPomFile: '$(Build.ArtifactStagingDirectory)/core/pom.xml'
+                    goals: deploy
                     publishJUnitResults: false
                     javaHomeOption: JDKVersion
                     jdkVersionOption: 1.11
