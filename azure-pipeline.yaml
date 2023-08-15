@@ -186,15 +186,17 @@ stages:
                     jdkArchitectureOption: 'x64'
                     mavenOptions: '-Xmx3072m'
                     mavenAuthenticateFeed: true
-                - task: Maven@3
+                - task: Maven@4
                   displayName: 'Maven Deploy WebApp'
                   inputs:
                     mavenPomFile: ./nexuse2e-webapp/pom.xml
                     goals: deploy
+                    options: '-Dmaven.test.skip=true'
                     publishJUnitResults: false
                     javaHomeOption: JDKVersion
                     jdkVersionOption: 1.11
                     jdkArchitectureOption: 'x64'
                     mavenOptions: '-Xmx3072m'
+                    mavenVersionOption: 'Default'
                     mavenAuthenticateFeed: true
                     effectivePomSkip: true
