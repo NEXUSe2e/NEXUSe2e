@@ -11,7 +11,7 @@
     <!-- this project -->
     <artifactId>nexuse2e-core</artifactId>
     <packaging>jar</packaging>
-    <version>kbaTest001</version>
+    <version>0.0.2</version>
     <name>NEXUSe2e Core Library</name>
     <url>http://www.nexuse2e.org</url>
     <!-- license -->

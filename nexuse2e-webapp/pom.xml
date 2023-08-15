@@ -11,7 +11,7 @@
 
     <artifactId>nexuse2e-webapp</artifactId>
     <packaging>war</packaging>
-    <version>kbaTest001</version>
+    <version>0.0.2</version>
     <name>NEXUSe2e Server Web Application</name>
     <url>http://www.nexuse2e.org</url>
 
@@ -36,7 +36,7 @@
         <dependency>
             <groupId>org.nexuse2e</groupId>
             <artifactId>nexuse2e-core</artifactId>
-            <version>kbaTest001</version>
+            <version>0.0.2</version>
         </dependency>
     </dependencies>
     <!-- build -->
