@@ -48,10 +48,10 @@ stages:
             displayName: Check Version
             name: checkVersion
           - task: Maven@3
-            name: Install_Parent
+            displayName: 'Maven Build Parent'
             inputs:
               mavenPomFile: ./nexuse2e-parent/pom.xml
-              goals: clean install
+              goals: clean verify
               options: >
                 -B -e --no-transfer-progress
               publishJUnitResults: false
@@ -60,24 +60,11 @@ stages:
               jdkArchitectureOption: 'x64'
               mavenOptions: '-Xmx3072m'
               mavenAuthenticateFeed: true
-          - task: CopyFiles@2
-            displayName: 'Copying Parent pom'
-            inputs:
-              SourceFolder: '$(build.sourcesdirectory)'
-              Contents: 'nexuse2e-parent/pom.xml'
-              TargetFolder: '$(Build.ArtifactStagingDirectory)/parent'
-              flattenFolders: true
-          - task: PublishBuildArtifacts@1
-            displayName: 'Publish Parent Artifacts'
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/parent'
-              ArtifactName: 'parent'
-              publishLocation: 'Container'
           - task: Maven@3
             displayName: 'Maven Build Core'
             inputs:
               mavenPomFile: ./nexuse2e-core/pom.xml
-              goals: clean install
+              goals: clean verify
               options: >
                 -B -e --no-transfer-progress
               publishJUnitResults: false
@@ -86,26 +73,6 @@ stages:
               jdkArchitectureOption: 'x64'
               mavenOptions: '-Xmx3072m'
               mavenAuthenticateFeed: true
-          - task: CopyFiles@2
-            displayName: 'Copying Core jar file'
-            inputs:
-              SourceFolder: '$(build.sourcesdirectory)'
-              Contents: 'nexuse2e-core/target/*.jar'
-              TargetFolder: '$(Build.ArtifactStagingDirectory)/core'
-              flattenFolders: true
-          - task: CopyFiles@2
-            displayName: 'Copying Core pom'
-            inputs:
-              SourceFolder: '$(build.sourcesdirectory)'
-              Contents: 'nexuse2e-core/pom.xml'
-              TargetFolder: '$(Build.ArtifactStagingDirectory)/core'
-              flattenFolders: true
-          - task: PublishBuildArtifacts@1
-            displayName: 'Publish Core Artifacts'
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/core'
-              ArtifactName: 'core'
-              publishLocation: 'Container'
           - task: Maven@3
             displayName: 'Maven Build WebApp'
             inputs:
@@ -124,13 +91,6 @@ stages:
             inputs:
               SourceFolder: '$(build.sourcesdirectory)'
               Contents: 'nexuse2e-webapp/target/*.war'
-              TargetFolder: '$(Build.ArtifactStagingDirectory)/webapp'
-              flattenFolders: true
-          - task: CopyFiles@2
-            displayName: 'Copying Webapp pom'
-            inputs:
-              SourceFolder: '$(build.sourcesdirectory)'
-              Contents: 'nexuse2e-webapp/pom.xml'
               TargetFolder: '$(Build.ArtifactStagingDirectory)/webapp'
               flattenFolders: true
           - task: PublishBuildArtifacts@1
@@ -218,7 +178,7 @@ stages:
                 - task: Maven@3
                   displayName: 'Maven Deploy Core'
                   inputs:
-                    mavenPomFile: '$(Build.ArtifactStagingDirectory)/core/pom.xml'
+                    mavenPomFile: ./nexuse2e-core/pom.xml
                     goals: deploy
                     publishJUnitResults: false
                     javaHomeOption: JDKVersion
@@ -229,7 +189,7 @@ stages:
                 - task: Maven@3
                   displayName: 'Maven Deploy WebApp'
                   inputs:
-                    mavenPomFile: '$(Build.ArtifactStagingDirectory)/webapp/pom.xml'
+                    mavenPomFile: ./nexuse2e-webapp/pom.xml
                     goals: deploy
                     publishJUnitResults: false
                     javaHomeOption: JDKVersion
