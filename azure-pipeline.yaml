@@ -179,7 +179,7 @@ stages:
                   displayName: 'Maven Deploy Core'
                   inputs:
                     mavenPomFile: ./nexuse2e-core/pom.xml
-                    goals: deploy
+                    goals: clean install
                     publishJUnitResults: false
                     javaHomeOption: JDKVersion
                     jdkVersionOption: 1.11
