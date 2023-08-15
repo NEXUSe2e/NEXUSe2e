@@ -185,7 +185,7 @@ stages:
       - name: versionTagMatches
         value: $[ stageDependencies.build.Build.outputs['checkVersion.versionTagMatches'] ]
     jobs:
-      - job: 'Deployment'
+      - deployment: 'Deployment'
         pool:
           vmImage: ubuntu-latest
         environment: 'NEXUSe2e-Devops-Feed'
