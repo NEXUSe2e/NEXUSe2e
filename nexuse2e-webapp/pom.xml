@@ -31,6 +31,19 @@
             <url>https://pkgs.dev.azure.com/evolvingsystemsconsulting/_packaging/org.nexuse2e/maven/v1</url>
         </repository>
     </distributionManagement>
+    <repositories>
+        <repository>
+            <id>org.nexuse2e</id>
+            <name>NEXUSe2e Releases</name>
+            <url>https://pkgs.dev.azure.com/evolvingsystemsconsulting/_packaging/org.nexuse2e/maven/v1</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
