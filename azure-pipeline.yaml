@@ -153,7 +153,7 @@ stages:
                 - powershell: |
                     echo "Version matches tag: $(versionTagMatches)"
                     if ("$(versionTagMatches)".Equals("False")) {
-                      echo "Pom versions do not match tag!"
+                      Write-Error "Pom versions do not match tag!"
                     }
                   displayName: Check Version
                   name: checkVersion
@@ -204,7 +204,7 @@ stages:
                 - powershell: |
                     echo "Version matches tag: $(versionTagMatches)"
                     if ("$(versionTagMatches)".Equals("False")) {
-                      echo "Pom versions do not match tag!"
+                      Write-Error "Pom versions do not match tag!"
                     }
                   displayName: Check Version
                   name: checkVersion
