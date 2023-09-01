@@ -20,8 +20,7 @@ stages:
           - powershell: |
               # Get version from webapp pom and add 'v' prefix
               [xml]$webappPomXml = Get-Content ./nexuse2e-webapp/pom.xml
-              $webappVersion = "v$($webappPomXml.project.version)"              
-              Write-Host "##vso[task.setvariable variable=webappPomVersion;isOutput=true]$($webappVersion)"
+              $webappVersion = "v$($webappPomXml.project.version)"
               
               # Get version from core pom and add 'v' prefix
               [xml]$corePomXml = Get-Content ./nexuse2e-core/pom.xml
@@ -136,12 +135,10 @@ stages:
                     isDraft: true
                     tagSource : 'gitTag'
   - stage: feed
-    displayName: Devops Feed Deployment
+    displayName: Devops Feed WebApp Deployment
     dependsOn: build
     condition: succeeded()
     variables:
-      - name: webappPomVersion
-        value: $[ stageDependencies.build.Build.outputs['checkVersion.webappPomVersion'] ]
       - name: versionTagMatches
         value: $[ stageDependencies.build.Build.outputs['checkVersion.versionTagMatches'] ]
     jobs:
@@ -154,7 +151,6 @@ stages:
             deploy:
               steps:
                 - powershell: |
-                    echo "Webapp version: $(webappPomVersion)"
                     echo "Version matches tag: $(versionTagMatches)"
                     if ("$(versionTagMatches)".Equals("False")) {
                       echo "Pom versions do not match tag!"
