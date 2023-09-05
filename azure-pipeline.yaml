@@ -17,8 +17,37 @@ stages:
         pool:
           vmImage: ubuntu-latest
         steps:
+          - powershell: |
+              # Get version from webapp pom and add 'v' prefix
+              [xml]$webappPomXml = Get-Content ./nexuse2e-webapp/pom.xml
+              $webappVersion = "v$($webappPomXml.project.version)"
+              
+              # Get version from core pom and add 'v' prefix
+              [xml]$corePomXml = Get-Content ./nexuse2e-core/pom.xml
+              $coreVersion = "v$($corePomXml.project.version)"
+              
+              # Get branch name 
+              $names = "$(Build.SourceBranch)".Split('/')
+              $branchName = $($names[$names.length - 1])
+              
+              # Compare branch name to pom versions
+              echo "Comparing branch name '$($branchName)' and webapp pom version (with 'v' prefix) '$($webappVersion)'"
+              $webAppVersionsMatch = "$($branchName)".Equals("$($webappVersion)")
+              echo "Webapp pom version matches tag: $($webAppVersionsMatch)"
+              
+              echo "Comparing branch name '$($branchName)' and core pom version (with 'v' prefix) '$($coreVersion)'"
+              $coreVersionsMatch = "$($branchName)".Equals("$($coreVersion)")
+              echo "Core pom version matches tag: $($coreVersionsMatch)"
+              
+              $versionsMatch = $webAppVersionsMatch -and $coreVersionsMatch
+              echo "All pom versions match tag: $($versionsMatch)"
+              
+              # Set versionTagMatches variable
+              Write-Host "##vso[task.setvariable variable=versionTagMatches;isOutput=true]$($versionsMatch)"
+            displayName: Check Version
+            name: checkVersion
           - task: Maven@3
-            name: Install_Parent
+            displayName: 'Maven Build Parent'
             inputs:
               mavenPomFile: ./nexuse2e-parent/pom.xml
               goals: clean install
@@ -43,19 +72,6 @@ stages:
               jdkArchitectureOption: 'x64'
               mavenOptions: '-Xmx3072m'
               mavenAuthenticateFeed: true
-          - task: CopyFiles@2
-            displayName: 'Copying Core files'
-            inputs:
-              SourceFolder: '$(build.sourcesdirectory)'
-              Contents: 'nexuse2e-core/target/*.jar'
-              TargetFolder: '$(Build.ArtifactStagingDirectory)/core'
-              flattenFolders: true
-          - task: PublishBuildArtifacts@1
-            displayName: 'Publish Core Artifacts'
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)/core'
-              ArtifactName: 'core'
-              publishLocation: 'Container'
           - task: Maven@3
             displayName: 'Maven Build WebApp'
             inputs:
@@ -70,7 +86,7 @@ stages:
               mavenOptions: '-Xmx3072m'
               mavenAuthenticateFeed: true
           - task: CopyFiles@2
-            displayName: 'Copying Webapp files'
+            displayName: 'Copying Webapp war file'
             inputs:
               SourceFolder: '$(build.sourcesdirectory)'
               Contents: 'nexuse2e-webapp/target/*.war'
@@ -82,13 +98,13 @@ stages:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)/webapp'
               ArtifactName: 'webapp'
               publishLocation: 'Container'
-          - script: |
-              echo 'Github Tag:'
-              echo $(Build.SourceBranch)
   - stage: github
     displayName: Github Release
     dependsOn: build
     condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags/'))
+    variables:
+      - name: versionTagMatches
+        value: $[ stageDependencies.build.Build.outputs['checkVersion.versionTagMatches'] ]
     jobs:
       - deployment: 'Release'
         pool:
@@ -98,6 +114,13 @@ stages:
           runOnce:
             deploy:
               steps:
+                - powershell: |
+                    echo "Version matches tag: $(versionTagMatches)"
+                    if ("$(versionTagMatches)".Equals("False")) {
+                      Write-Error "Pom versions do not match tag!"
+                    }
+                  displayName: Check Version
+                  name: checkVersion
                 - task: DownloadBuildArtifacts@0
                   displayName: 'Download Webapp Artifacts'
                   inputs:
@@ -108,6 +131,120 @@ stages:
                   displayName: 'GitHub Release (Draft)'
                   inputs:
                     gitHubConnection: 'NEXUSe2e_Github'
-                    assets: '$(Build.ArtifactStagingDirectory)/webapp/*'
+                    assets: '$(Build.ArtifactStagingDirectory)/webapp/*.war'
                     isDraft: true
                     tagSource : 'gitTag'
+  - stage: feed_core
+    displayName: Feed Core Deployment
+    dependsOn: build
+    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags/'))
+    variables:
+      - name: versionTagMatches
+        value: $[ stageDependencies.build.Build.outputs['checkVersion.versionTagMatches'] ]
+    jobs:
+      - deployment: 'Deployment'
+        pool:
+          vmImage: ubuntu-latest
+        environment: 'NEXUSe2e-Devops-Feed'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - powershell: |
+                    echo "Version matches tag: $(versionTagMatches)"
+                    if ("$(versionTagMatches)".Equals("False")) {
+                      Write-Error "Pom versions do not match tag!"
+                    }
+                  displayName: Check Version
+                  name: checkVersion
+                - checkout: self
+                - task: Maven@3
+                  displayName: 'Maven Build Parent'
+                  inputs:
+                    mavenPomFile: ./nexuse2e-parent/pom.xml
+                    goals: clean install
+                    options: >
+                      -B -e --no-transfer-progress
+                    publishJUnitResults: false
+                    javaHomeOption: JDKVersion
+                    jdkVersionOption: 1.11
+                    jdkArchitectureOption: 'x64'
+                    mavenOptions: '-Xmx3072m'
+                    mavenAuthenticateFeed: true
+                - task: Maven@3
+                  displayName: 'Maven Deploy Core'
+                  inputs:
+                    mavenPomFile: ./nexuse2e-core/pom.xml
+                    goals: deploy
+                    options: '-Dmaven.test.skip=true'
+                    publishJUnitResults: false
+                    javaHomeOption: JDKVersion
+                    jdkVersionOption: 1.11
+                    jdkArchitectureOption: 'x64'
+                    mavenOptions: '-Xmx3072m'
+                    mavenVersionOption: 'Default'
+                    mavenAuthenticateFeed: true
+                    effectivePomSkip: true
+  - stage: feed_webapp
+    displayName: Feed WebApp Deployment
+    dependsOn: build
+    condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'tags/'))
+    variables:
+      - name: versionTagMatches
+        value: $[ stageDependencies.build.Build.outputs['checkVersion.versionTagMatches'] ]
+    jobs:
+      - deployment: 'Deployment'
+        pool:
+          vmImage: ubuntu-latest
+        environment: 'NEXUSe2e-Devops-Feed'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - powershell: |
+                    echo "Version matches tag: $(versionTagMatches)"
+                    if ("$(versionTagMatches)".Equals("False")) {
+                      Write-Error "Pom versions do not match tag!"
+                    }
+                  displayName: Check Version
+                  name: checkVersion
+                - checkout: self
+                - task: Maven@3
+                  displayName: 'Maven Build Parent'
+                  inputs:
+                    mavenPomFile: ./nexuse2e-parent/pom.xml
+                    goals: clean install
+                    options: >
+                      -B -e --no-transfer-progress
+                    publishJUnitResults: false
+                    javaHomeOption: JDKVersion
+                    jdkVersionOption: 1.11
+                    jdkArchitectureOption: 'x64'
+                    mavenOptions: '-Xmx3072m'
+                    mavenAuthenticateFeed: true
+                - task: Maven@3
+                  displayName: 'Maven Deploy Core'
+                  inputs:
+                    mavenPomFile: ./nexuse2e-core/pom.xml
+                    goals: clean install
+                    options: '-Dmaven.test.skip=true'
+                    publishJUnitResults: false
+                    javaHomeOption: JDKVersion
+                    jdkVersionOption: 1.11
+                    jdkArchitectureOption: 'x64'
+                    mavenOptions: '-Xmx3072m'
+                    mavenAuthenticateFeed: true
+                - task: Maven@4
+                  displayName: 'Maven Deploy WebApp'
+                  inputs:
+                    mavenPomFile: ./nexuse2e-webapp/pom.xml
+                    goals: deploy
+                    options: '-Dmaven.test.skip=true'
+                    publishJUnitResults: false
+                    javaHomeOption: JDKVersion
+                    jdkVersionOption: 1.11
+                    jdkArchitectureOption: 'x64'
+                    mavenOptions: '-Xmx3072m'
+                    mavenVersionOption: 'Default'
+                    mavenAuthenticateFeed: true
+                    effectivePomSkip: true
