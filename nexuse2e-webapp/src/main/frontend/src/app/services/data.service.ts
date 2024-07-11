@@ -244,7 +244,7 @@ export class DataService {
 
   getDownloadPayloadLink(item: PayloadParams) {
     return (
-      "/DataSaveAs.do?type=content&choreographyId=" +
+      "../DataSaveAs.do?type=content&choreographyId=" +
       item.choreographyId +
       "&participantId=" +
       item.partnerId +
