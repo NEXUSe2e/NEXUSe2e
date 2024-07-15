@@ -88,6 +88,13 @@ public interface ConversationStateMachine {
     public abstract void sentMessage() throws StateTransitionException, NexusException;
 
     /**
+     * Persists an outgoing acknowledgement for a synchronous and reliable connection.
+     * @throws StateTransitionException If the state transition is illegal.
+     * @throws NexusException If the transition could not be performed due to a system-specific error.
+     */
+    public abstract void sentSynchronousAck() throws StateTransitionException, NexusException;
+
+    /**
      * Puts an inbound request message to SENT state.
      * @throws StateTransitionException If the state transition is illegal.
      * @throws NexusException If the transition could not be performed due to a system-specific error.

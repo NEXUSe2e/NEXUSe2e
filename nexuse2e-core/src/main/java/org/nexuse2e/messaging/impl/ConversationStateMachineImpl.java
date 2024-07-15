@@ -256,6 +256,41 @@ public class ConversationStateMachineImpl implements ConversationStateMachine {
         executeStateTransitionJobs(StateTransition.SENT_MESSAGE);
     }
 
+    public void sentSynchronousAck() throws NexusException {
+
+        if (message.isAck() && message.isOutbound()) {
+            Object syncObj = Engine.getInstance().getTransactionService().getSyncObjectForConversation(conversation);
+
+            synchronized (syncObj) {
+                UpdateTransactionOperation operation = new UpdateTransactionOperation() {
+                    public UpdateScope update(ConversationPojo conversation, MessagePojo message,
+                                              MessagePojo referencedMessage) throws
+                            StateTransitionException {
+
+                        message.setStatus(MessageStatus.SENT.getOrdinal());
+                        message.setModifiedDate(new Date());
+                        message.setEndDate(message.getModifiedDate());
+                        message.setReferencedMessage(null);
+
+                        if (conversation.getStatus() != Constants.CONVERSATION_STATUS_COMPLETED && conversation.getStatus() != Constants.CONVERSATION_STATUS_ERROR) {
+                            LOG.error(new LogMessage("Unexpected conversation state after sending ack message: " + conversation.getStatusName(), message));
+                        }
+                        return UpdateScope.MESSAGE_ONLY;
+                    }
+                };
+
+                // Persist status changes
+                try {
+                    Engine.getInstance().getTransactionService().updateTransaction(message, operation);
+                } catch (StateTransitionException stex) {
+                    LOG.warn(new LogMessage(stex.getMessage(), message), stex);
+                }
+            }
+        }
+        // execute state transition jobs
+        executeStateTransitionJobs(StateTransition.SENT_MESSAGE);
+    }
+
     public void receivedRequestMessage() throws StateTransitionException, NexusException {
 
         UpdateTransactionOperation operation = new UpdateTransactionOperation() {
