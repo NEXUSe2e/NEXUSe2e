@@ -11,7 +11,7 @@
     <!-- this project -->
     <artifactId>nexuse2e-core</artifactId>
     <packaging>jar</packaging>
-    <version>5.11.7-SNAPSHOT</version>
+    <version>5.11.7</version>
     <name>NEXUSe2e Core Library</name>
     <url>http://www.nexuse2e.org</url>
     <!-- license -->
