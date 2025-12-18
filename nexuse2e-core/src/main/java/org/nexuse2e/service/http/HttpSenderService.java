@@ -146,9 +146,11 @@ public class HttpSenderService extends AbstractService implements SenderAware {
                 }
 
                 CertificatePojo localCert = participant.getLocalCertificate();
-                if (localCert == null) {
-                    LOG.error(new LogMessage("No local certificate selected for using SSL with partner " + participant.getPartner().getName(), messageContext.getMessagePojo()));
-                    throw new NexusException("No local certificate selected for using SSL with partner " + participant.getPartner().getName());
+                KeyStore privateKeyChain = null;
+                String privateKeyPassword = null;
+                if (localCert != null) {
+                    privateKeyChain = CertificateUtil.getPKCS12KeyStore(localCert);
+                    privateKeyPassword = EncryptionUtil.decryptString(localCert.getPassword());
                 }
 
                 CertificatePojo partnerCert = participant.getConnection().getCertificate();
@@ -159,11 +161,10 @@ public class HttpSenderService extends AbstractService implements SenderAware {
                 if (metaPojo != null) {
                     cacertspwd = EncryptionUtil.decryptString(metaPojo.getPassword());
                 }
-                KeyStore privateKeyChain = CertificateUtil.getPKCS12KeyStore(localCert);
+
 
                 myhttps = new Protocol("https",
-                        (ProtocolSocketFactory) new CertSSLProtocolSocketFactory(privateKeyChain,
-                                EncryptionUtil.decryptString(localCert.getPassword()),
+                        (ProtocolSocketFactory) new CertSSLProtocolSocketFactory(privateKeyChain, privateKeyPassword,
                                 Engine.getInstance().getActiveConfigurationAccessService().getCacertsKeyStore(),
                                 cacertspwd, partnerCert, tlsProtocols, tlsCiphers), 443);
 
