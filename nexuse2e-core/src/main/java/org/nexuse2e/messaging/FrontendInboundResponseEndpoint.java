@@ -50,6 +50,12 @@ public class FrontendInboundResponseEndpoint implements MessageProcessor, Manage
             } catch (StateTransitionException e) {
                 throw new NexusException( e );
             }
+        } else if (messageContext != null && messageContext.getMessagePojo().isAck()) {
+            try {
+                messageContext.getStateMachine().sentSynchronousAck();  // save ack as 'sent'
+            } catch (StateTransitionException e) {
+                throw new NexusException( e );
+            }
         }
         
         return messageContext;
