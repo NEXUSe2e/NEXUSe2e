@@ -72,7 +72,8 @@ import org.nexuse2e.util.EncryptionUtil;
  */
 public class HttpSenderService extends AbstractService implements SenderAware {
 
-    private static Logger      LOG                        = Logger.getLogger(HttpSenderService.class);
+    private static Logger LOG                        = Logger.getLogger(HttpSenderService.class);
+    public static final String LEGACY_HTTP_HEADER_FOLDING = "httpHeaderFolding";
 
     /** PARAMETERS **/
     public static final String PREEMPTIVE_AUTH_PARAM_NAME = "preemptiveAuth";
@@ -83,6 +84,8 @@ public class HttpSenderService extends AbstractService implements SenderAware {
     public void fillParameterMap(Map<String, ParameterDescriptor> parameterMap) {
         parameterMap.put(PREEMPTIVE_AUTH_PARAM_NAME, new ParameterDescriptor(ParameterType.BOOLEAN, "Preemptive Authentication",
                 "Check, if the HTTP client should use preemtive authentication.", Boolean.FALSE));
+        parameterMap.put(LEGACY_HTTP_HEADER_FOLDING, new ParameterDescriptor(ParameterType.BOOLEAN, "Legacy Http header Folding",
+                "HTTP Header folding is deprecated. In case of issues, the old behavior can be activated.", Boolean.FALSE));
     }
 
     @Override
@@ -141,10 +144,11 @@ public class HttpSenderService extends AbstractService implements SenderAware {
                 }
 
                 CertificatePojo localCert = participant.getLocalCertificate();
-                if (localCert == null) {
-                    LOG.error(new LogMessage("No local certificate selected for using SSL with partner " + participant.getPartner().getName(), messageContext
-                            .getMessagePojo()));
-                    throw new NexusException("No local certificate selected for using SSL with partner " + participant.getPartner().getName());
+                KeyStore privateKeyChain = null;
+                String privateKeyPassword = null;
+                if (localCert != null) {
+                    privateKeyChain = CertificateUtil.getPKCS12KeyStore(localCert);
+                    privateKeyPassword = EncryptionUtil.decryptString(localCert.getPassword());
                 }
 
                 CertificatePojo partnerCert = participant.getConnection().getCertificate();
@@ -155,10 +159,9 @@ public class HttpSenderService extends AbstractService implements SenderAware {
                 if (metaPojo != null) {
                     cacertspwd = EncryptionUtil.decryptString(metaPojo.getPassword());
                 }
-                KeyStore privateKeyChain = CertificateUtil.getPKCS12KeyStore(localCert);
 
                 myhttps = new Protocol("https", (ProtocolSocketFactory) new CertSSLProtocolSocketFactory(privateKeyChain,
-                        EncryptionUtil.decryptString(localCert.getPassword()), Engine.getInstance().getActiveConfigurationAccessService().getCacertsKeyStore(),
+                        privateKeyPassword, Engine.getInstance().getActiveConfigurationAccessService().getCacertsKeyStore(),
                         cacertspwd, partnerCert,tlsProtocols,tlsCiphers), 443);
 
                 client.getHostConfiguration().setHost(receiverURL.getHost(), receiverURL.getPort(), myhttps);
@@ -203,14 +206,19 @@ public class HttpSenderService extends AbstractService implements SenderAware {
 
                 String contentTypeString = null;
 
-                /* No bug with wrapping the content type, see section 2.2 of http://www.ietf.org/rfc/rfc2616.txt */
-                ContentType contentType = new ContentType("multipart/related");
-                contentType.setParameter("type", "text/xml");
-                contentType.setParameter("boundary", "MIME_boundary");
-                contentType.setParameter("start", messageContext.getMessagePojo().getMessageId() + messageContext.getMessagePojo().getTRP().getProtocol()
-                        + "-Header");
+                Boolean folding = getParameter(LEGACY_HTTP_HEADER_FOLDING);
 
-                contentTypeString = contentType.toString();
+                if (folding == null || !folding) {
+                    contentTypeString = "multipart/related; type=\"text/xml\"; boundary=MIME_boundary; start=" + messageContext.getMessagePojo().getMessageId() + messageContext.getMessagePojo().getTRP().getProtocol() + "-Header";
+                } else {
+                    /* No bug with wrapping the content type, see section 2.2 of http://www.ietf.org/rfc/rfc2616.txt */
+                    ContentType contentType = new ContentType("multipart/related");
+                    contentType.setParameter("type", "text/xml");
+                    contentType.setParameter("boundary", "MIME_boundary");
+                    contentType.setParameter("start", messageContext.getMessagePojo().getMessageId() + messageContext.getMessagePojo().getTRP().getProtocol()
+                            + "-Header");
+                    contentTypeString = contentType.toString();
+                }
 
                 RequestEntity requestEntity = new ByteArrayRequestEntity((byte[]) messageContext.getData(), "Content-Type:" + contentTypeString);
 
